@@ -4,8 +4,10 @@ import ssl
 import smtplib
 import csv
 from dotenv import load_dotenv
+from os.path import basename
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
+from email.mime.application import MIMEApplication
 from email.mime.image import MIMEImage
 
 
@@ -14,19 +16,6 @@ from email.mime.image import MIMEImage
 def to_multiline_string(normal_string):
     return f"""{normal_string}"""
     
-
-# def get_parishes():
-#     file_path = './parishes.txt'
-#     parishes = []
-#     emails = []
-#     with open(file_path, 'r') as file:
-#         text = file.read()
-#         text = text.split("\n")
-#         for parish in text:
-#             parish = parish.split(", ")
-#             parishes.append(parish[0])
-#             emails.append(parish[1])
-#     return parishes, emails
 
 def getFromCSV():
     diocesesSheets = os.listdir('./dioceses')
@@ -71,7 +60,8 @@ def send_emails(sender, password, emails, receiver_names, messages):
         subject = 'Connect Retreat 2024'
         body += f"\n\nThis would have sent to {receiver_email}" # DELETE ME when sending emails
         receiver_email = 'davidislearninghowtosendemails@gmail.com' # DELETE ME to send out emails
-        attachments = ["TestAttachment1.jpg"] # Change to add relevant attachments
+        attachments = ["TestAttachment1.jpg", "connectLogo.png", 'message.txt'] # Change to add relevant attachments
+        
         
         with open('./signiture.txt', 'r') as sig_file:
             signiture = sig_file.read()
@@ -92,12 +82,34 @@ def send_emails(sender, password, emails, receiver_names, messages):
 
         with open(signitureLogo, 'rb') as fp:
             img = MIMEImage(fp.read())
+        img.add_header('Content-Disposition', 'attachment', filename='ConnectLogo.jpg')
         img.add_header('Content-ID', '<{}>'.format(signitureLogo))
         em.attach(img)
 
-        # for attachment_path in attachments:
-        #     with open(attachment_path, "rb") as attachment:
-        #         em.attach(attachment.read(), maintype="application", subtype='octet-stream', filename=os.path.basename(attachment_path))
+        # for filename in attachments:
+        #     # filename = "File_name_with_extension"
+        #     attachment = open(filename, "rb") 
+        #     # instance of MIMEBase and named as p 
+        #     p = MIMEBase('application', 'octet-stream') 
+        #     # To change the payload into encoded form 
+        #     p.set_payload((attachment).read()) 
+        #     # encode into base64 
+        #     encoders.encode_base64(p) 
+        #     p.add_header('Content-Disposition', "attachment; filename= %s" % filename) 
+        #     # attach the instance 'p' to instance 'msg' 
+        #     em.attach(p) 
+
+
+        for f in attachments or []:
+            with open(f, "rb") as fil:
+                part = MIMEApplication(
+                    fil.read(),
+                    Name=basename(f)
+                )
+            # After the file is closed
+            part['Content-Disposition'] = 'attachment; filename="%s"' % basename(f)
+            em.attach(part)
+
         
         
         context = ssl.create_default_context()
