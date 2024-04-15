@@ -9,6 +9,7 @@ from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 from email.mime.application import MIMEApplication
 from email.mime.image import MIMEImage
+import datetime
 
 
 #CONVERT ’ to ' for all messages!
@@ -48,7 +49,7 @@ def getFromCSV():
 
 def load_configuration():
     load_dotenv() # DELETE ME
-    sender = 'emailslotso@gmail.com' # UPDATE ME
+    sender = 'davidhigpenscholarship@gmail.com' # UPDATE ME
     password = os.environ.get('PASSWORD') # UPDATE ME
     parish_names, secretary_emails, youth_minister_names, youth_minister_emails = getFromCSV()
     return sender, password, parish_names, secretary_emails, youth_minister_names, youth_minister_emails
@@ -60,17 +61,32 @@ def load_messages(file_path, insertIntoHotword, hotword):
     return messages
 
 def send_emails(sender, password, emails, receiver_names, messages):
-    for index, (body, receiver_email, receiver_name) in enumerate(zip(messages, emails, receiver_names)):
-        send_email(sender, password, body, receiver_email,receiver_name)
+    created_emails = []
+    for _, (body, receiver_email) in enumerate(zip(messages, emails)):
+        temp = make_email(sender, password, body, receiver_email)
+        created_emails.append(temp)
+        
+    
+    BCC_list = ["davidhiggins@tamu.edu", "davidhigpenscholarship@gmail.com"] # UPDATE ME
+    context = ssl.create_default_context()
+    with smtplib.SMTP_SSL('smtp.gmail.com', 465, context=context) as smtp, open('sentReceipts.txt', 'a') as file:
+        # smtp.login(sender, password)
+        for i, em in enumerate(created_emails):
+            # smtp.sendmail(sender, em['To'], em.as_string()) # UNCOMMENT ME
+            em['Bcc'] = ", ".join(BCC_list)
+            # smtp.sendmail(sender, BCC_list, em.as_string()) # UNCOMMENT ME
+            
+            print(f"Email sent to {receiver_names[i]}")
+            current_time = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+            file.write(f"Email sent to {receiver_names[i]} at {current_time}\n")
+            
         
         
-def send_email(sender, password, body, receiver_email, receiver_name):
+def make_email(sender, password, body, receiver_email):
     subject = 'Connect Retreat 2024'
     body += f"\n\nThis would have sent to {receiver_email}" # DELETE ME when sending emails
     receiver_email = 'davidislearninghowtosendemails@gmail.com' # DELETE ME to send out emails
     attachments = ["Sunday Bulletin Announcement.png", "St. Mary's Flyer.pdf"] # Change to add relevant attachments
-    # BCC_list = ["connect.outreach@aggiecatholic.org", "tpoyner@aggiecatholic.org", "connect.directors@aggiecatholic.org", "connect.logistics@aggiecatholic.org"]
-    BCC_list = ["davidhiggins@tamu.edu", "davidhigpenscholarship@gmail.com"]
     
     
     with open('./signiture.txt', 'r') as sig_file:
@@ -88,15 +104,14 @@ def send_email(sender, password, body, receiver_email, receiver_name):
     em.attach(emBody)
     
     emHTML = MIMEText(signiture % (signitureLogo), 'html')   
-    em.attach(emHTML)   # Added, and edited the previous line
+    em.attach(emHTML)
 
     with open(signitureLogo, 'rb') as fp:
         img = MIMEImage(fp.read())
     img.add_header('Content-Disposition', 'attachment', filename='ConnectLogo.jpg')
     img.add_header('Content-ID', '<{}>'.format(signitureLogo))
     em.attach(img)
-
-
+    
     for f in attachments or []:
         with open(f, "rb") as fil:
             part = MIMEApplication(
@@ -106,24 +121,12 @@ def send_email(sender, password, body, receiver_email, receiver_name):
         # After the file is closed
         part['Content-Disposition'] = 'attachment; filename="%s"' % basename(f)
         em.attach(part)
-
-    
-    
-    context = ssl.create_default_context()
-    with smtplib.SMTP_SSL('smtp.gmail.com', 465, context=context) as smtp:
-        smtp.login(sender, password)
-        smtp.sendmail(sender, receiver_email, em.as_string())
-        em['Bcc'] = ", ".join(BCC_list)
-        # smtp.sendmail(sender, BCC_list, em.as_string())
-    print(f"Email sent to {receiver_name}")
-    # exit() # DELETE ME
-    
+            
+    return em
+   
 
 def main():
     sender, password, parish_names, secretary_emails, youth_minister_names, youth_minister_emails = load_configuration()
-
-    secretary_messages = load_messages('./parishMessage.txt', parish_names, '[NO_HOTWORD]')
-    send_emails(sender, password, secretary_emails, parish_names, secretary_messages)
     
     youth_minister_messages = load_messages('./youthMinister.txt', youth_minister_names, '[Youth Minister Name]')
     send_emails(sender, password, youth_minister_emails, youth_minister_names, youth_minister_messages)
