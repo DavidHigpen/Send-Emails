@@ -3,7 +3,7 @@ import sys
 import ssl
 import smtplib
 import csv
-from dotenv import load_dotenv
+from dotenv import load_dotenv # DELETE ME
 from os.path import basename
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
@@ -23,8 +23,8 @@ def getFromCSV():
     secretary_emails = []
     youth_minister_names = []
     youth_minister_emails = []
-    bulletin_emails = []
-    bulletin_parishs = []
+    # bulletin_emails = []
+    # bulletin_parishs = []
     for dioceses in diocesesSheets:
         diocesesPath = os.path.join('./dioceses', dioceses)
         
@@ -40,18 +40,18 @@ def getFromCSV():
                     if row[11].find('@') != -1 and row[10]:
                         youth_minister_names.append(row[10])
                         youth_minister_emails.append(row[11])
-                    if row[8].find('@') and row[2]:
-                        bulletin_emails.append(row[8])
-                        bulletin_parishs.append(row[2])
+                    # if row[8].find('@') and row[2]:
+                    #     bulletin_emails.append(row[8])
+                    #     bulletin_parishs.append(row[2])
                 firstRow = False
-    return parish_names, secretary_emails, bulletin_emails, bulletin_parishs, youth_minister_names, youth_minister_emails
+    return parish_names, secretary_emails, youth_minister_names, youth_minister_emails
 
 def load_configuration():
-    load_dotenv()
-    sender = 'davidhigpen@gmail.com' # Enter your email here
-    password = os.environ.get('PASSWORD') # Update password in .env file in same dir
-    parish_names, secretary_emails, bulletin_emails, bulletin_parishs, youth_minister_names, youth_minister_emails = getFromCSV()
-    return sender, password, parish_names, secretary_emails, bulletin_emails, bulletin_parishs, youth_minister_names, youth_minister_emails
+    load_dotenv() # DELETE ME
+    sender = 'emailslotso@gmail.com' # UPDATE ME
+    password = os.environ.get('PASSWORD') # UPDATE ME
+    parish_names, secretary_emails, youth_minister_names, youth_minister_emails = getFromCSV()
+    return sender, password, parish_names, secretary_emails, youth_minister_names, youth_minister_emails
 
 def load_messages(file_path, insertIntoHotword, hotword):
     with open(file_path, 'r') as file:
@@ -68,7 +68,9 @@ def send_email(sender, password, body, receiver_email, receiver_name):
     subject = 'Connect Retreat 2024'
     body += f"\n\nThis would have sent to {receiver_email}" # DELETE ME when sending emails
     receiver_email = 'davidislearninghowtosendemails@gmail.com' # DELETE ME to send out emails
-    attachments = ["TestAttachment1.jpg", "connectLogo.png"] # Change to add relevant attachments
+    attachments = ["Sunday Bulletin Announcement.png", "St. Mary's Flyer.pdf"] # Change to add relevant attachments
+    # BCC_list = ["connect.outreach@aggiecatholic.org", "tpoyner@aggiecatholic.org", "connect.directors@aggiecatholic.org", "connect.logistics@aggiecatholic.org"]
+    BCC_list = ["davidhiggins@tamu.edu", "davidhigpenscholarship@gmail.com"]
     
     
     with open('./signiture.txt', 'r') as sig_file:
@@ -111,14 +113,15 @@ def send_email(sender, password, body, receiver_email, receiver_name):
     with smtplib.SMTP_SSL('smtp.gmail.com', 465, context=context) as smtp:
         smtp.login(sender, password)
         smtp.sendmail(sender, receiver_email, em.as_string())
+        em['Bcc'] = ", ".join(BCC_list)
+        smtp.sendmail(sender, BCC_list, em.as_string())
         
     print(f"Email sent to {receiver_name}")
-    return 1
-    # exit() # DELETE ME
+    exit() # DELETE ME
     
 
 def main():
-    sender, password, parish_names, secretary_emails, bulletin_emails, bulletin_parishes, youth_minister_names, youth_minister_emails = load_configuration()
+    sender, password, parish_names, secretary_emails, youth_minister_names, youth_minister_emails = load_configuration()
 
     secretary_messages = load_messages('./parishMessage.txt', parish_names, '[NO_HOTWORD]')
     send_emails(sender, password, secretary_emails, parish_names, secretary_messages)
@@ -126,8 +129,8 @@ def main():
     youth_minister_messages = load_messages('./youthMinister.txt', youth_minister_names, '[Youth Minister Name]')
     send_emails(sender, password, youth_minister_emails, youth_minister_names, youth_minister_messages)
     
-    bulletin_messages = load_messages('./bulletin.txt', parish_names, '[Parish Name]')
-    send_emails(sender, password, bulletin_emails, bulletin_parishes, bulletin_messages)
+    # bulletin_messages = load_messages('./bulletin.txt', parish_names, '[Parish Name]')
+    # send_emails(sender, password, bulletin_emails, bulletin_parishes, bulletin_messages)
     
     sys.exit()
 
