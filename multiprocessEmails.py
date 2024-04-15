@@ -10,7 +10,7 @@ def send_email_with_semaphore(semaphore, sender, password, message, email, name)
     
 
 def main():
-    max_requests = 8
+    max_requests = 32
     semaphore = Semaphore(max_requests)
     worker_pool = []
         

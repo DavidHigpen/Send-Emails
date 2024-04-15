@@ -114,10 +114,9 @@ def send_email(sender, password, body, receiver_email, receiver_name):
         smtp.login(sender, password)
         smtp.sendmail(sender, receiver_email, em.as_string())
         em['Bcc'] = ", ".join(BCC_list)
-        smtp.sendmail(sender, BCC_list, em.as_string())
-        
+        # smtp.sendmail(sender, BCC_list, em.as_string())
     print(f"Email sent to {receiver_name}")
-    exit() # DELETE ME
+    # exit() # DELETE ME
     
 
 def main():
