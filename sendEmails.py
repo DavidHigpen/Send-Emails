@@ -72,16 +72,21 @@ def send_emails(sender, password, emails, receiver_names, messages):
     BCC_list = ["davidhiggins@tamu.edu"] # UPDATE ME
     context = ssl.create_default_context()
     with smtplib.SMTP_SSL('smtp.gmail.com', 465, context=context) as smtp:
-        smtp.login(sender, password) # UNCOMMENT ME
+        # smtp.login(sender, password) # UNCOMMENT ME
         for i, em in enumerate(created_emails):
-            # smtp.sendmail(sender, em['To'], em.as_string()) # UNCOMMENT ME
-            em['Bcc'] = ", ".join(BCC_list)
-            # smtp.sendmail(sender, BCC_list, em.as_string()) # UNCOMMENT ME
-            
-            print(f"Email sent to {receiver_names[i]}")
             current_time = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-            with open('sentReceipts.txt', 'a') as file:
-                file.write(f"Email sent to {receiver_names[i]} at {em['To']} at {current_time}\n")
+            try:
+                # smtp.sendmail(sender, em['To'], em.as_string()) # UNCOMMENT ME
+                em['Bcc'] = ", ".join(BCC_list)
+                # smtp.sendmail(sender, BCC_list, em.as_string()) # UNCOMMENT ME
+            except:
+                print(f"ERROR email did not send to {receiver_names[i]} at {em['To']}")
+                with open('sentFails.txt', 'a') as file:
+                    file.write(f"Email not sent to {receiver_names[i]} at {em['To']} at {current_time}\n")
+            else:
+                print(f"Email sent to {receiver_names[i]}")
+                with open('sentReceipts.txt', 'a') as file:
+                    file.write(f"Email sent to {receiver_names[i]} at {em['To']} at {current_time}\n")
             
         
         
