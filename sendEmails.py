@@ -3,6 +3,7 @@ import sys
 import ssl
 import smtplib
 import csv
+import copy
 from dotenv import load_dotenv # DELETE ME
 from os.path import basename
 from email.mime.multipart import MIMEMultipart
@@ -61,11 +62,8 @@ def load_messages(file_path, insertIntoHotword, hotword):
     return messages
 
 def send_emails(sender, password, emails, receiver_names, messages):
-    created_emails = []
     print("creating emails")
-    for _, (body, receiver_email) in enumerate(zip(messages, emails)):
-        temp = make_email(sender, password, body, receiver_email)
-        created_emails.append(temp)
+    created_emails = make_emails(sender, emails, receiver_names, messages)
         
     print("sending emails")
     
@@ -96,36 +94,28 @@ def send_emails(sender, password, emails, receiver_names, messages):
             
         
         
-def make_email(sender, password, body, receiver_email):
+def make_emails(sender, emails, receiver_names, messages):
+    created_emails = []
+        
     subject = 'Connect Retreat 2024'
-    # body += f"\n\nThis would have sent to {receiver_email}" # DELETE ME when sending emails
-    # receiver_email = 'davidislearninghowtosendemails@gmail.com' # DELETE ME to send out emails
-    # attachments = []
+    attachments = []
     attachments = ["Sunday Bulletin Announcement.png", "St. Mary's Flyer.pdf"] # Change to add relevant attachments
-    
     
     with open('./signiture.txt', 'r') as sig_file:
         signiture = sig_file.read()
         
     signitureLogo = './connectLogo.png'
     
-    em = MIMEMultipart()
+    emTemplate = MIMEMultipart()
 
-    em['From'] = sender
-    em['To'] = receiver_email
-    em['Subject'] = subject
+    emTemplate['From'] = sender
+    emTemplate['Subject'] = subject
     
-    emBody = MIMEText(body, 'plain')
-    em.attach(emBody)
-    
-    emHTML = MIMEText(signiture % (signitureLogo), 'html')   
-    em.attach(emHTML)
-
     with open(signitureLogo, 'rb') as fp:
         img = MIMEImage(fp.read())
     img.add_header('Content-Disposition', 'attachment', filename='ConnectLogo.jpg')
     img.add_header('Content-ID', '<{}>'.format(signitureLogo))
-    em.attach(img)
+    emTemplate.attach(img)
     
     for f in attachments or []:
         with open(f, "rb") as fil:
@@ -135,9 +125,26 @@ def make_email(sender, password, body, receiver_email):
             )
         # After the file is closed
         part['Content-Disposition'] = 'attachment; filename="%s"' % basename(f)
-        em.attach(part)
+        emTemplate.attach(part)
+    
+    for _, (body, receiver_email) in enumerate(zip(messages, emails)):
+        em = copy.deepcopy(emTemplate)
+        em['To'] = receiver_email
+    
+        emBody = MIMEText(body, 'plain')
+        em.attach(emBody)
+        
+        emHTML = MIMEText(signiture % (signitureLogo), 'html')   
+        em.attach(emHTML)
+
+        with open(signitureLogo, 'rb') as fp:
+            img = MIMEImage(fp.read())
+        img.add_header('Content-Disposition', 'attachment', filename='ConnectLogo.jpg')
+        img.add_header('Content-ID', '<{}>'.format(signitureLogo))
+        em.attach(img)
             
-    return em
+        created_emails.append(em)
+    return created_emails
    
 
 def main():
