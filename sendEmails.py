@@ -61,9 +61,10 @@ def load_messages(file_path, insertIntoHotword, hotword):
         messages = [to_multiline_string(text.replace(hotword, replacement)) for replacement in insertIntoHotword]
     return messages
 
-def send_emails(sender, password, emails, receiver_names, messages):
+def send_emails(sender, password, emails, receiver_names, messages, created_emails = None):
     print("creating emails")
-    created_emails = make_emails(sender, emails, receiver_names, messages)
+    if created_emails == None:
+        created_emails = make_emails(sender, emails, receiver_names, messages)
         
     print("sending emails")
     

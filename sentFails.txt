@@ -54,3 +54,6 @@ Email not sent to 5 at a@@@@ at 2024-04-21 22:52:04
 Email not sent to 2 (bulletin) at bademail at 2024-04-21 23:02:55
 Email not sent to 3 (bulletin) at also a bad email @ who at 2024-04-21 23:02:55
 Email not sent to 5 (bulletin) at a@@@@ at 2024-04-21 23:02:55
+Email not sent to 3 (bulletin) at also a bad email @ who at 2024-04-21 23:06:45
+Email not sent to 5 (bulletin) at a@@@@ at 2024-04-21 23:06:45
+Email not sent to 2 (bulletin) at bademail at 2024-04-21 23:06:45
