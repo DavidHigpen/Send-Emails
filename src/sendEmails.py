@@ -20,7 +20,7 @@ def to_multiline_string(normal_string):
     
 
 def getFromCSV():
-    diocesesSheets = os.listdir('./dioceses')
+    diocesesSheets = os.listdir('./../dioceses')
     # parish_names = []
     # secretary_emails = []
     # youth_minister_names = []
@@ -28,7 +28,7 @@ def getFromCSV():
     bulletin_emails = []
     bulletin_parishes = []
     for dioceses in diocesesSheets:
-        diocesesPath = os.path.join('./dioceses', dioceses)
+        diocesesPath = os.path.join('./../dioceses', dioceses)
         
         with open(diocesesPath, newline='') as sheet:
             
@@ -80,7 +80,7 @@ def send_emails(sender, password, emails, receiver_names, messages, created_emai
                 smtp.sendmail(sender, BCC_list, em.as_string()) # UNCOMMENT ME
             except smtplib.SMTPRecipientsRefused as e:
                 print(f"ERROR email did not send to {receiver_names[i]} at {em['To']}")
-                with open('sentFails.txt', 'a') as file:
+                with open('./../logs/sentFails.txt', 'a') as file:
                     file.write(f"Email not sent to {receiver_names[i]} at {em['To']} at {current_time}\n")
             except smtplib.SMTPServerDisconnected:
                 print("Server disconnected, ending program")
@@ -90,7 +90,7 @@ def send_emails(sender, password, emails, receiver_names, messages, created_emai
                 smtp.quit()
             else:
                 print(f"Email sent to {receiver_names[i]}")
-                with open('sentReceipts.txt', 'a') as file:
+                with open('./../logs/sentReceipts.txt', 'a') as file:
                     file.write(f"Email sent to {receiver_names[i]} at {em['To']} at {current_time}\n")
             
         
@@ -99,13 +99,20 @@ def make_emails(sender, emails, receiver_names, messages):
     created_emails = []
         
     subject = 'Connect Retreat 2024'
-    attachments = []
-    attachments = ["Sunday Bulletin Announcement.png", "St. Mary's Flyer.pdf"] # Change to add relevant attachments
+    # attachments = ["Sunday Bulletin Announcement.png", "St. Mary's Flyer.pdf"] # Change to add relevant attachments
     
-    with open('./signiture.txt', 'r') as sig_file:
+    attachments = os.listdir('./../attachments')
+    attachments = [os.path.join('./../attachments/', attachment) for attachment in attachments]
+    # for attachment in attachments:
+    #     attachment = os.path.join('./../attachments/', attachment)
+    # print(attachments)
+    
+    
+    
+    with open('./../messages/signiture.txt', 'r') as sig_file:
         signiture = sig_file.read()
         
-    signitureLogo = './connectLogo.png'
+    signitureLogo = './../messages/connectLogo.png'
     
     emTemplate = MIMEMultipart()
 
@@ -154,7 +161,7 @@ def main():
     # youth_minister_messages = load_messages('./youthMinister.txt', youth_minister_names, '[Youth Minister Name]')
     # send_emails(sender, password, youth_minister_emails, youth_minister_names, youth_minister_messages)
     
-    bulletin_messages = load_messages('./bulletin.txt', bulletin_parishes, '[Parish Name]')
+    bulletin_messages = load_messages('./../messages/bulletin.txt', bulletin_parishes, '[Parish Name]')
     send_emails(sender, password, bulletin_emails, bulletin_parishes, bulletin_messages)
     
     sys.exit()
