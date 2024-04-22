@@ -2,6 +2,7 @@ from multiprocessing import Process
 from sendEmails import send_emails, load_messages, load_configuration
 
 def send_email_with_semaphore(sender, password, emails, receiver_names, messages):
+    print("process started")
     send_emails(sender, password, emails, receiver_names, messages)
     
  
