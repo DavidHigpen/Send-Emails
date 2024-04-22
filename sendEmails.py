@@ -72,17 +72,23 @@ def send_emails(sender, password, emails, receiver_names, messages):
     BCC_list = ["davidhiggins@tamu.edu"] # UPDATE ME
     context = ssl.create_default_context()
     with smtplib.SMTP_SSL('smtp.gmail.com', 465, context=context) as smtp:
-        # smtp.login(sender, password) # UNCOMMENT ME
+        smtp.login(sender, password) # UNCOMMENT ME
         for i, em in enumerate(created_emails):
             current_time = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
             try:
-                # smtp.sendmail(sender, em['To'], em.as_string()) # UNCOMMENT ME
+                smtp.sendmail(sender, em['To'], em.as_string()) # UNCOMMENT ME
                 em['Bcc'] = ", ".join(BCC_list)
-                # smtp.sendmail(sender, BCC_list, em.as_string()) # UNCOMMENT ME
-            except:
+                smtp.sendmail(sender, BCC_list, em.as_string()) # UNCOMMENT ME
+            except smtplib.SMTPRecipientsRefused as e:
                 print(f"ERROR email did not send to {receiver_names[i]} at {em['To']}")
                 with open('sentFails.txt', 'a') as file:
                     file.write(f"Email not sent to {receiver_names[i]} at {em['To']} at {current_time}\n")
+            except smtplib.SMTPServerDisconnected:
+                print("Server disconnected, ending program")
+                exit()
+            except KeyboardInterrupt:
+                print("Keyboard interrupt detected. Logging out...")
+                smtp.quit()
             else:
                 print(f"Email sent to {receiver_names[i]}")
                 with open('sentReceipts.txt', 'a') as file:
@@ -92,8 +98,9 @@ def send_emails(sender, password, emails, receiver_names, messages):
         
 def make_email(sender, password, body, receiver_email):
     subject = 'Connect Retreat 2024'
-    body += f"\n\nThis would have sent to {receiver_email}" # DELETE ME when sending emails
-    receiver_email = 'davidislearninghowtosendemails@gmail.com' # DELETE ME to send out emails
+    # body += f"\n\nThis would have sent to {receiver_email}" # DELETE ME when sending emails
+    # receiver_email = 'davidislearninghowtosendemails@gmail.com' # DELETE ME to send out emails
+    # attachments = []
     attachments = ["Sunday Bulletin Announcement.png", "St. Mary's Flyer.pdf"] # Change to add relevant attachments
     
     
