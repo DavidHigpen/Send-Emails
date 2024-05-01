@@ -68,15 +68,15 @@ def send_emails(sender, password, emails, receiver_names, messages, created_emai
         
     print("sending emails")
     
-    BCC_list = ["davidhiggins@tamu.edu"] # UPDATE ME
+    BCC_list = ["davidhiggins@tamu.edu", "davidhigpen@gmail.com", "davidislearninghowtosendemails@gmail.com", "emailslotso@gmail.com"] # UPDATE ME
     context = ssl.create_default_context()
     with smtplib.SMTP_SSL('smtp.gmail.com', 465, context=context) as smtp:
         smtp.login(sender, password) # UNCOMMENT ME
         for i, em in enumerate(created_emails):
             current_time = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
             try:
-                smtp.sendmail(sender, em['To'], em.as_string()) # UNCOMMENT ME
-                em['Bcc'] = ", ".join(BCC_list)
+                # smtp.sendmail(sender, em['To'], em.as_string()) # UNCOMMENT ME
+                # em['Bcc'] = ", ".join(BCC_list)
                 smtp.sendmail(sender, BCC_list, em.as_string()) # UNCOMMENT ME
             except smtplib.SMTPRecipientsRefused as e:
                 print(f"ERROR email did not send to {receiver_names[i]} at {em['To']}")
@@ -99,31 +99,20 @@ def make_emails(sender, emails, receiver_names, messages):
     created_emails = []
         
     subject = 'Connect Retreat 2024'
-    # attachments = ["Sunday Bulletin Announcement.png", "St. Mary's Flyer.pdf"] # Change to add relevant attachments
     
     attachments = os.listdir('./../attachments')
     attachments = [os.path.join('./../attachments/', attachment) for attachment in attachments]
-    # for attachment in attachments:
-    #     attachment = os.path.join('./../attachments/', attachment)
-    # print(attachments)
-    
-    
-    
-    with open('./../messages/signiture.txt', 'r') as sig_file:
+ 
+    with open('./../messages/gif.txt', 'r') as sig_file: # CHANGE ME back to .../signiture.txt'...
         signiture = sig_file.read()
         
-    signitureLogo = './../messages/connectLogo.png'
+    file_name = 'connectgif.gif'
+    signitureLogo = './../messages/' + file_name
     
     emTemplate = MIMEMultipart()
 
     emTemplate['From'] = sender
     emTemplate['Subject'] = subject
-    
-    with open(signitureLogo, 'rb') as fp:
-        img = MIMEImage(fp.read())
-    img.add_header('Content-Disposition', 'attachment', filename='ConnectLogo.jpg')
-    img.add_header('Content-ID', '<{}>'.format(signitureLogo))
-    emTemplate.attach(img)
     
     for f in attachments or []:
         with open(f, "rb") as fil:
@@ -131,7 +120,6 @@ def make_emails(sender, emails, receiver_names, messages):
                 fil.read(),
                 Name=basename(f)
             )
-        # After the file is closed
         part['Content-Disposition'] = 'attachment; filename="%s"' % basename(f)
         emTemplate.attach(part)
     
@@ -139,15 +127,15 @@ def make_emails(sender, emails, receiver_names, messages):
         em = copy.deepcopy(emTemplate)
         em['To'] = receiver_email
     
-        emBody = MIMEText(body, 'plain')
-        em.attach(emBody)
+        # emBody = MIMEText(body,x 'plain')
+        # em.attach(emBody)
         
         emHTML = MIMEText(signiture % (signitureLogo), 'html')   
         em.attach(emHTML)
 
         with open(signitureLogo, 'rb') as fp:
             img = MIMEImage(fp.read())
-        img.add_header('Content-Disposition', 'attachment', filename='ConnectLogo.jpg')
+        img.add_header('Content-Disposition', 'attachment', filename=file_name)
         img.add_header('Content-ID', '<{}>'.format(signitureLogo))
         em.attach(img)
             

@@ -14,7 +14,7 @@ def main():
 
     # secretary_messages = load_messages('./parishMessage.txt', parish_names, '[NO_HOTWORD]')
     # youth_minister_messages = load_messages('./youthMinister.txt', youth_minister_names, '[Youth Minister Name]')
-    bulletin_messages = load_messages('./bulletin.txt', bulletin_parishes, '[Parish Name]')
+    bulletin_messages = load_messages('./../messages/bulletin.txt', bulletin_parishes, '[Parish Name]')
     
     category_queue = [' (bulletin)'] * len(bulletin_messages) 
     
